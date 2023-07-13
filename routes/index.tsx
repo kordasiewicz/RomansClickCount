@@ -1,30 +1,37 @@
 import { Head } from "$fresh/runtime.ts";
-import { useSignal } from "@preact/signals";
-import Counter from "../islands/Counter.tsx";
+import { Handlers, PageProps } from "$fresh/server.ts";
+import { ScoreboardState, State } from "../lib/state.ts";
+import ClickApp from "../islands/ClickApp.tsx";
 
-let myGlobalCounter = 0;
+interface HomeProps {
+  initialScoreState: ScoreboardState;
+}
 
-export default function Home() {
-  myGlobalCounter++;
-  console.log(`Got me a global counter value of: ${myGlobalCounter}`);
+export const handler: Handlers<HomeProps, State> = {
+  GET(_req, ctx) {
+    return ctx.render({
+      initialScoreState: ctx.state.scoreboard.scoreState.value,
+    });
+  },
+};
 
-  const count = useSignal(3);
+export default function Home(props: PageProps<HomeProps>) {
   return (
     <>
       <Head>
-        <title>Fresh App</title>
+        <title>Click count</title>
       </Head>
       <div class="p-4 mx-auto max-w-screen-md">
+        <h1 class="my-2">
+          Click count
+        </h1>
         <img
-          src="/logo.svg"
-          class="w-32 h-32"
-          alt="the fresh logo: a sliced lemon dripping with juice"
-        />
-        <p class="my-6">
-          Welcome to `fresh`. Try updating this message in the
-          ./routes/index.tsx file, and refresh.
-        </p>
-        <Counter count={count} />
+          src="mouse-cursor.svg"
+          width="400px"
+          alt="Lordalpha1, CC BY 2.5 <https://creativecommons.org/licenses/by/2.5>, via Wikimedia Commons"
+        >
+        </img>
+        <ClickApp initialScoreState={props.data.initialScoreState}></ClickApp>
       </div>
     </>
   );

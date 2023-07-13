@@ -14,3 +14,17 @@ deno task start
 ```
 
 This will watch the project directory and restart as necessary.
+
+### Building for Docker
+
+To build your Docker image inside of a Git repository:
+
+```
+docker build --build-arg GIT_REVISION=$(git rev-parse HEAD) -t clickcount .
+```
+
+Then run your Docker container:
+
+```
+docker run -t -i -p 80:8000 clickcount
+```

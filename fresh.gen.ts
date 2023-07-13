@@ -3,18 +3,24 @@
 // This file is automatically updated during development when running `dev.ts`.
 
 import * as $0 from "./routes/[name].tsx";
-import * as $1 from "./routes/api/joke.ts";
-import * as $2 from "./routes/index.tsx";
-import * as $$0 from "./islands/Counter.tsx";
+import * as $1 from "./routes/_middleware.ts";
+import * as $2 from "./routes/api/bomb.ts";
+import * as $3 from "./routes/api/click.ts";
+import * as $4 from "./routes/api/scoreboard.ts";
+import * as $5 from "./routes/index.tsx";
+import * as $$0 from "./islands/ClickApp.tsx";
 
 const manifest = {
   routes: {
     "./routes/[name].tsx": $0,
-    "./routes/api/joke.ts": $1,
-    "./routes/index.tsx": $2,
+    "./routes/_middleware.ts": $1,
+    "./routes/api/bomb.ts": $2,
+    "./routes/api/click.ts": $3,
+    "./routes/api/scoreboard.ts": $4,
+    "./routes/index.tsx": $5,
   },
   islands: {
-    "./islands/Counter.tsx": $$0,
+    "./islands/ClickApp.tsx": $$0,
   },
   baseUrl: import.meta.url,
 };
