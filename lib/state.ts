@@ -13,10 +13,10 @@ export class Scoreboard {
   private static singleton: Scoreboard;
 
   readonly scoreState: Signal<ScoreboardState>;
-  
+
   public constructor() {
     // TODO: Load/Deserialize from durable storage (sqlite? )
-    this.scoreState = signal({scores: {}, lastUpdated: Date.now()});
+    this.scoreState = signal({ scores: {}, lastUpdated: Date.now() });
   }
 
   public static init() {
@@ -27,5 +27,4 @@ export class Scoreboard {
     if (this.singleton) return this.singleton;
     else throw new Error("Scoreboard is not initialized");
   }
-
 }

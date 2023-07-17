@@ -9,8 +9,8 @@ export const handler: Handlers<unknown, State> = {
         status: 400,
       });
     }
-    
-    const newScoreState = {...ctx.state.scoreboard.scoreState.value};
+
+    const newScoreState = { ...ctx.state.scoreboard.scoreState.value };
     newScoreState.scores[username] = (newScoreState.scores[username] ?? 0) + 1;
     newScoreState.lastUpdated = Date.now();
     ctx.state.scoreboard.scoreState.value = newScoreState;
