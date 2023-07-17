@@ -30,3 +30,5 @@ docker run -t -i -p 80:8000 clickcount
 ```
 
 :)
+
+Test auto deploy
