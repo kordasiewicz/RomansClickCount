@@ -28,3 +28,5 @@ Then run your Docker container:
 ```
 docker run -t -i -p 80:8000 clickcount
 ```
+
+Test docker file trigger with pub/sub notification
