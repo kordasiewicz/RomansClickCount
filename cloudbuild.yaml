@@ -57,9 +57,9 @@ steps:
     set -e
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
       IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
-      RELEASE_NAME="${_RELEASE:-release-$SHORT_SHA}"SHA}"
-      echo "Creating Cloud Deploy release '${RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' (region: ${_REGION}) using image: ${IMAGE}"AGE}"
-      gcloud deploy releases create "${RELEASE_NAME}" \E}" \
+      _RELEASE_NAME="${_RELEASE:-release-$SHORT_SHA}"SHA}"
+      echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' (region: ${_REGION}) using image: ${IMAGE}"AGE}"
+      gcloud deploy releases create "${_RELEASE_NAME}" \E}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
         --images="${_SERVICE}=${IMAGE}"
