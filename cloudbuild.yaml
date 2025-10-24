@@ -11,6 +11,9 @@
 # - Cloud Deploy delivery pipeline "clickcount-pipeline" exists and has targets "staging" and "production", or set _PIPELINE to your pipeline name.
 # - Cloud Build service account has roles/artifactregistry.writer and roles/clouddeploy.releasemanager, and permission to update Cloud Run if needed.
 
+options:
+  logging: CLOUD_LOGGING_ONLY  # Add this section
+
 substitutions:
   _SERVICE: "romans-click-count"
   _REGION: "us-central1"
