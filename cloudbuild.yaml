@@ -1,0 +1,71 @@
+# Cloud Build configuration: build Docker image, push to Artifact Registry (us-central1),
+# and create a Cloud Deploy release that will run the delivery pipeline to deploy to Cloud Run.
+#
+# Usage:
+#  gcloud builds submit --config cloudbuild.yaml .
+# To run build+deploy (create a Cloud Deploy release):
+#  gcloud builds submit --config cloudbuild.yaml --substitutions=_SERVICE="romans-click-count",_PIPELINE="clickcount-pipeline",_DEPLOY_TO_CLOUD_DEPLOY=true
+#
+# Preconditions:
+# - Artifact Registry repository "clickcountdemo" exists in us-central1.
+# - Cloud Deploy delivery pipeline "clickcount-pipeline" exists and has targets "staging" and "production", or set _PIPELINE to your pipeline name.
+# - Cloud Build service account has roles/artifactregistry.writer and roles/clouddeploy.releasemanager, and permission to update Cloud Run if needed.
+
+substitutions:
+  _SERVICE: "romans-click-count"
+  _REGION: "us-central1"
+  _REPOSITORY: "clickcountdemo"
+  _DEPLOY_TO_CLOUD_DEPLOY: "true"
+  _PIPELINE: "clickcount-pipeline"
+  _RELEASE: ""  # optional; defaults to release-$SHORT_SHA when empty
+
+steps:
+# 1) Configure Docker auth for Artifact Registry (region-specific)
+- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+  entrypoint: "bash"
+  args:
+  - "-c"
+  - |
+    set -e
+    echo "Configuring Docker authentication for Artifact Registry in region: ${_REGION}"
+    gcloud auth configure-docker "${_REGION}-docker.pkg.dev" --quiet
+
+# 2) Build the Docker image and tag it for Artifact Registry
+- name: "gcr.io/cloud-builders/docker"
+  args:
+  - "build"
+  - "-t"
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
+  - "."
+
+# 3) Push the image to Artifact Registry
+- name: "gcr.io/cloud-builders/docker"
+  args:
+  - "push"
+  - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
+
+# 4) Optionally create a Cloud Deploy release which will deploy to Cloud Run via the pipeline's targets.
+#    This step runs only when _DEPLOY_TO_CLOUD_DEPLOY == "true".
+- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+  entrypoint: "bash"
+  args:
+  - "-c"
+  - |
+    set -e
+    if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
+      IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
+      RELEASE_NAME="${_RELEASE:-release-$SHORT_SHA}"
+      echo "Creating Cloud Deploy release '${RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' (region: ${_REGION}) using image: ${IMAGE}"
+      gcloud deploy releases create "${RELEASE_NAME}" \
+        --delivery-pipeline="${_PIPELINE}" \
+        --region="${_REGION}" \
+        --images="${_SERVICE}=${IMAGE}"
+      echo "Cloud Deploy release created. Cloud Deploy will manage the rollout to the pipeline's targets (e.g., Cloud Run)."
+    else
+      echo "Skipping Cloud Deploy release creation (set _DEPLOY_TO_CLOUD_DEPLOY=true to enable)."
+    fi
+
+images:
+- "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
+
+timeout: "1200s"

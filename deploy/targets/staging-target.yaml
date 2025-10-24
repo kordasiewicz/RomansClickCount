@@ -1,0 +1,9 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: staging
+  description: "Cloud Run staging target for RomansClickCount"
+# Cloud Deploy Target configuration for Cloud Run (us-central1). Adjust the service name if you use a different Cloud Run service.
+cloudRun:
+  region: us-central1
+  service: romans-click-count-staging

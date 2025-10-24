@@ -1,0 +1,9 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: clickcount-pipeline
+  description: "Delivery pipeline for RomansClickCount with staging and production stages"
+serialPipeline:
+  stages:
+    - targetId: staging
+    - targetId: production
