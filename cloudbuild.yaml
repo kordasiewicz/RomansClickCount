@@ -45,11 +45,7 @@ steps:
   args:
   - "-c"
   - |
-    set -e
-    
-    # Inside this script, user substitutions (like _REGION) 
-    # are available as environment variables *without* the underscore (e.g., $REGION)
-    
+    set -e 
     if [ "${DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
       _IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:$BUILD_ID"
       _RELEASE_NAME="${RELEASE:-release-$BUILD_ID}"
