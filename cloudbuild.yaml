@@ -46,15 +46,15 @@ steps:
   - "-c"
   - |
     set -e 
-    if [ "${DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
+    if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
       _IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:$BUILD_ID"
       _RELEASE_NAME="${RELEASE:-release-$BUILD_ID}"
       
-      echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${PIPELINE}' using image: ${_IMAGE}"
+      echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: ${_IMAGE}"
       
       # Use the script variables (without '_') here
       gcloud deploy releases create "${_RELEASE_NAME}" \
-        --delivery-pipeline="${PIPELINE}" \
+        --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
         --images="${SERVICE}=${_IMAGE}"
       echo "Cloud Deploy release created successfully."
