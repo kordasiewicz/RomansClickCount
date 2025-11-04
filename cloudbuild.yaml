@@ -55,13 +55,13 @@ steps:
   - |
     set -e
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
-      RELEASE_NAME="release-$SHORT_SHA"
-      echo "Creating Cloud Deploy release '${RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: ${IMAGE}"
-      gcloud deploy releases create $RELEASE_NAME \
-        --delivery-pipeline=${_PIPELINE} \
-        --region=${_REGION} \
-        --images=${_SERVICE}=${IMAGE}
+      _IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
+      _RELEASE_NAME="${_RELEASE:-release-$SHORT_SHA}"
+      echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: ${_IMAGE}"
+      gcloud deploy releases create "${_RELEASE_NAME}" \
+        --delivery-pipeline="${_PIPELINE}" \
+        --region="${_REGION}" \
+        --images="${_SERVICE}=${_IMAGE}"
       echo "Cloud Deploy release created successfully."
     else
       echo "Skipping Cloud Deploy release creation"
