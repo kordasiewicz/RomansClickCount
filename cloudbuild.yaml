@@ -1,12 +1,7 @@
-# Cloud Build configuration: build Docker image, push to Artifact Registry (us-central1),
-# and create a Cloud Deploy release that will run the delivery pipeline to deploy to Cloud Run
-
+# Cloud Build configuration
 options:
   logging: CLOUD_LOGGING_ONLY
 
-# ----------------------------------------------------------------
-# THIS BLOCK IS CORRECT - All keys start with an underscore '_'
-# ----------------------------------------------------------------
 substitutions:
   _SERVICE: "romans-click-count"
   _REGION: "us-central1"
@@ -16,8 +11,7 @@ substitutions:
   _RELEASE: ""  # optional; defaults to release-$BUILD_ID when empty
 
 steps:
-# 1) Configure Docker auth (Uses $_REGION, $PROJECT_ID, etc.)
-# These 'args' blocks are substituted directly by Cloud Build
+# 1) Configure Docker auth
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   entrypoint: "bash"
   args:
@@ -27,7 +21,7 @@ steps:
     echo "Configuring Docker authentication for Artifact Registry in region: ${_REGION}"
     gcloud auth configure-docker "${_REGION}-docker.pkg.dev" --quiet
 
-# 2) Build the Docker image (Uses $_REGION, $PROJECT_ID, etc.)
+# 2) Build the Docker image
 - name: "gcr.io/cloud-builders/docker"
   args:
   - "build"
@@ -35,7 +29,7 @@ steps:
   - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
   - "."
 
-# 3) Push the image (Uses $_REGION, $PROJECT_ID, etc.)
+# 3) Push the image
 - name: "gcr.io/cloud-builders/docker"
   args:
   - "push"
@@ -43,7 +37,7 @@ steps:
 
 # 4) Optionally create a Cloud Deploy release
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-  # FIX 1: Pass built-in variables ($PROJECT_ID, $BUILD_ID) to the script
+  # Pass built-in variables ($PROJECT_ID, $BUILD_ID) to the script
   env:
   - 'PROJECT_ID=${PROJECT_ID}'
   - 'BUILD_ID=${BUILD_ID}'
@@ -53,7 +47,7 @@ steps:
   - |
     set -e
     
-    # FIX 2: Inside this script, user substitutions (_REGION) 
+    # Inside this script, user substitutions (like _REGION) 
     # are available as environment variables *without* the underscore (e.g., $REGION)
     
     if [ "${DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
@@ -72,7 +66,7 @@ steps:
       echo "Skipping Cloud Deploy release creation"
     fi
 
-# This 'images' block is also substituted directly by Cloud Build
+# This 'images' block is substituted by Cloud Build before runtime
 images:
 - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
 
