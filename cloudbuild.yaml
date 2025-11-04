@@ -1,10 +1,5 @@
 # Cloud Build configuration: build Docker image, push to Artifact Registry (us-central1),
 # and create a Cloud Deploy release that will run the delivery pipeline to deploy to Cloud Run
-#
-# Usage:
-#  gcloud builds submit --config cloudbuild.yaml .
-# To run build+deploy (create a Cloud Deploy release):
-#  gcloud builds submit --config cloudbuild.yaml --substitutions=_SERVICE="romans-click-count",_PIPELINE="clickcount-pipeline",_DEPLOY_TO_CLOUD_DEPLOY=true
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -25,6 +20,7 @@ steps:
   - "-c"
   - |
     set -e
+    # $_REGION works here because it's in an 'args' block, not 'entrypoint'
     echo "Configuring Docker authentication for Artifact Registry in region: ${_REGION}"
     gcloud auth configure-docker "${_REGION}-docker.pkg.dev" --quiet
 
@@ -33,6 +29,7 @@ steps:
   args:
   - "build"
   - "-t"
+  # $PROJECT_ID and $BUILD_ID work here because it's an 'args' block
   - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
   - "."
 
@@ -44,8 +41,7 @@ steps:
 
 # 4) Optionally create a Cloud Deploy release
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-  # ⬇️ *** THIS IS THE FIX *** ⬇️
-  # Pass default substitutions as environment variables to the script
+  # *** FIX 1: Add 'env' block to pass in built-in variables ***
   env:
   - 'PROJECT_ID=${PROJECT_ID}'
   - 'BUILD_ID=${BUILD_ID}'
@@ -54,17 +50,20 @@ steps:
   - "-c"
   - |
     set -e
-    if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      # These variables will now be correctly populated from the environment
-      _IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
-      _RELEASE_NAME="${_RELEASE:-release-$BUILD_ID}"
+    # *** FIX 2: Refer to variables *without* the '_' prefix ***
+    # User substitutions (like _REGION) become $REGION.
+    # Built-in variables (like $PROJECT_ID) are passed from the 'env' block.
+    
+    if [ "${DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
+      _IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:$BUILD_ID"
+      _RELEASE_NAME="${RELEASE:-release-$BUILD_ID}"
       
-      echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: ${_IMAGE}"
+      echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${PIPELINE}' using image: ${_IMAGE}"
       
       gcloud deploy releases create "${_RELEASE_NAME}" \
-        --delivery-pipeline="${_PIPELINE}" \
-        --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE}"
+        --delivery-pipeline="${PIPELINE}" \
+        --region="${REGION}" \
+        --images="${SERVICE}=${_IMAGE}"
       echo "Cloud Deploy release created successfully."
     else
       echo "Skipping Cloud Deploy release creation"
