@@ -47,8 +47,7 @@ steps:
   - "push"
   - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
 
-# 4) Optionally create a Cloud Deploy release which will deploy to Cloud Run via the pipeline's targets.
-#    This step runs only when _DEPLOY_TO_CLOUD_DEPLOY == "true".
+# 4) Optionally create a Cloud Deploy release
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   entrypoint: "bash"
   args:
@@ -56,16 +55,16 @@ steps:
   - |
     set -e
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      _IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
-      _RELEASE_NAME="${_RELEASE:-release-$SHORT_SHA}"
-      echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' (region: ${_REGION}) using image: ${_IMAGE}"
-      gcloud deploy releases create "${_RELEASE_NAME}" \
-        --delivery-pipeline="${_PIPELINE}" \
-        --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE}"
-      echo "Cloud Deploy release created. Cloud Deploy will manage the rollout to the pipeline's targets (e.g., Cloud Run)."
+      IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$SHORT_SHA"
+      RELEASE_NAME="release-$SHORT_SHA"
+      echo "Creating Cloud Deploy release '${RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: ${IMAGE}"
+      gcloud deploy releases create $RELEASE_NAME \
+        --delivery-pipeline=${_PIPELINE} \
+        --region=${_REGION} \
+        --images=${_SERVICE}=${IMAGE}
+      echo "Cloud Deploy release created successfully."
     else
-      echo "Skipping Cloud Deploy release creation (set _DEPLOY_TO_CLOUD_DEPLOY=true to enable)."
+      echo "Skipping Cloud Deploy release creation"
     fi
 
 images:
