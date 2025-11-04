@@ -1,5 +1,5 @@
 # Cloud Build configuration: build Docker image, push to Artifact Registry (us-central1),
-# and create a Cloud Deploy release that will run the delivery pipeline to deploy to Cloud Run.
+# and create a Cloud Deploy release that will run the delivery pipeline to deploy to Cloud Run
 #
 # Usage:
 #  gcloud builds submit --config cloudbuild.yaml .
