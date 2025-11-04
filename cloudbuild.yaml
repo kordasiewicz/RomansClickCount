@@ -51,7 +51,7 @@ steps:
     # are available as environment variables *without* the underscore (e.g., $REGION)
     
     if [ "${DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      _IMAGE="${REGION}-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:$BUILD_ID"
+      _IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:$BUILD_ID"
       _RELEASE_NAME="${RELEASE:-release-$BUILD_ID}"
       
       echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${PIPELINE}' using image: ${_IMAGE}"
@@ -59,7 +59,7 @@ steps:
       # Use the script variables (without '_') here
       gcloud deploy releases create "${_RELEASE_NAME}" \
         --delivery-pipeline="${PIPELINE}" \
-        --region="${REGION}" \
+        --region="${_REGION}" \
         --images="${SERVICE}=${_IMAGE}"
       echo "Cloud Deploy release created successfully."
     else
