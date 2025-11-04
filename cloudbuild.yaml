@@ -5,11 +5,6 @@
 #  gcloud builds submit --config cloudbuild.yaml .
 # To run build+deploy (create a Cloud Deploy release):
 #  gcloud builds submit --config cloudbuild.yaml --substitutions=_SERVICE="romans-click-count",_PIPELINE="clickcount-pipeline",_DEPLOY_TO_CLOUD_DEPLOY=true
-#
-# Preconditions:
-# - Artifact Registry repository "clickcountdemo" exists in us-central1.
-# - Cloud Deploy delivery pipeline "clickcount-pipeline" exists and has targets "staging" and "production", or set _PIPELINE to your pipeline name.
-# - Cloud Build service account has roles/artifactregistry.writer and roles/clouddeploy.releasemanager, and permission to update Cloud Run if needed.
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -38,7 +33,6 @@ steps:
   args:
   - "build"
   - "-t"
-  # MODIFIED: Use $BUILD_ID instead of $SHORT_SHA
   - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
   - "."
 
@@ -46,22 +40,27 @@ steps:
 - name: "gcr.io/cloud-builders/docker"
   args:
   - "push"
-  # MODIFIED: Use $BUILD_ID instead of $SHORT_SHA
   - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
 
 # 4) Optionally create a Cloud Deploy release
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+  # ⬇️ *** THIS IS THE FIX *** ⬇️
+  # Pass default substitutions as environment variables to the script
+  env:
+  - 'PROJECT_ID=${PROJECT_ID}'
+  - 'BUILD_ID=${BUILD_ID}'
   entrypoint: "bash"
   args:
   - "-c"
   - |
     set -e
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      # MODIFIED: Use $BUILD_ID instead of $SHORT_SHA
+      # These variables will now be correctly populated from the environment
       _IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
-      # MODIFIED: Use $BUILD_ID as the fallback instead of $SHORT_SHA
       _RELEASE_NAME="${_RELEASE:-release-$BUILD_ID}"
+      
       echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: ${_IMAGE}"
+      
       gcloud deploy releases create "${_RELEASE_NAME}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
@@ -72,7 +71,6 @@ steps:
     fi
 
 images:
-# MODIFIED: Use $BUILD_ID instead of $SHORT_SHA
 - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
 
 timeout: "1200s"
