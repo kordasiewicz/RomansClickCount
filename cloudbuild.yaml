@@ -4,6 +4,9 @@
 options:
   logging: CLOUD_LOGGING_ONLY
 
+# ----------------------------------------------------------------
+# THIS BLOCK IS CORRECT - All keys start with an underscore '_'
+# ----------------------------------------------------------------
 substitutions:
   _SERVICE: "romans-click-count"
   _REGION: "us-central1"
@@ -13,27 +16,26 @@ substitutions:
   _RELEASE: ""  # optional; defaults to release-$BUILD_ID when empty
 
 steps:
-# 1) Configure Docker auth for Artifact Registry (region-specific)
+# 1) Configure Docker auth (Uses $_REGION, $PROJECT_ID, etc.)
+# These 'args' blocks are substituted directly by Cloud Build
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   entrypoint: "bash"
   args:
   - "-c"
   - |
     set -e
-    # $_REGION works here because it's in an 'args' block, not 'entrypoint'
     echo "Configuring Docker authentication for Artifact Registry in region: ${_REGION}"
     gcloud auth configure-docker "${_REGION}-docker.pkg.dev" --quiet
 
-# 2) Build the Docker image and tag it for Artifact Registry
+# 2) Build the Docker image (Uses $_REGION, $PROJECT_ID, etc.)
 - name: "gcr.io/cloud-builders/docker"
   args:
   - "build"
   - "-t"
-  # $PROJECT_ID and $BUILD_ID work here because it's an 'args' block
   - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
   - "."
 
-# 3) Push the image to Artifact Registry
+# 3) Push the image (Uses $_REGION, $PROJECT_ID, etc.)
 - name: "gcr.io/cloud-builders/docker"
   args:
   - "push"
@@ -41,7 +43,7 @@ steps:
 
 # 4) Optionally create a Cloud Deploy release
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-  # *** FIX 1: Add 'env' block to pass in built-in variables ***
+  # FIX 1: Pass built-in variables ($PROJECT_ID, $BUILD_ID) to the script
   env:
   - 'PROJECT_ID=${PROJECT_ID}'
   - 'BUILD_ID=${BUILD_ID}'
@@ -50,16 +52,17 @@ steps:
   - "-c"
   - |
     set -e
-    # *** FIX 2: Refer to variables *without* the '_' prefix ***
-    # User substitutions (like _REGION) become $REGION.
-    # Built-in variables (like $PROJECT_ID) are passed from the 'env' block.
+    
+    # FIX 2: Inside this script, user substitutions (_REGION) 
+    # are available as environment variables *without* the underscore (e.g., $REGION)
     
     if [ "${DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      _IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:$BUILD_ID"
+      _IMAGE="${REGION}-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE:$BUILD_ID"
       _RELEASE_NAME="${RELEASE:-release-$BUILD_ID}"
       
       echo "Creating Cloud Deploy release '${_RELEASE_NAME}' for delivery pipeline '${PIPELINE}' using image: ${_IMAGE}"
       
+      # Use the script variables (without '_') here
       gcloud deploy releases create "${_RELEASE_NAME}" \
         --delivery-pipeline="${PIPELINE}" \
         --region="${REGION}" \
@@ -69,6 +72,7 @@ steps:
       echo "Skipping Cloud Deploy release creation"
     fi
 
+# This 'images' block is also substituted directly by Cloud Build
 images:
 - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
 
