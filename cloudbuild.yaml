@@ -41,14 +41,14 @@ steps:
   env:
   - 'PROJECT_ID=${PROJECT_ID}'
   - 'BUILD_ID=${BUILD_ID}'
-  - 'IMAGE=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${SERVICE}:${BUILD_ID}"
+  - 'IMAGE=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${SERVICE}:${BUILD_ID}'
   entrypoint: "bash"
   args:
   - "-c"
   - |
     set -e 
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      _IMAGE="${_REGION}-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY/$_SERVICE:$BUILD_ID"
+      
       _RELEASE_NAME="${RELEASE:-release-$BUILD_ID}"
       
       echo "Creating Cloud Deploy , bid '$BUILD_ID' release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $IMAGE"
@@ -57,7 +57,7 @@ steps:
       gcloud deploy releases create "${_RELEASE_NAME}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE}"
+        --images="${_SERVICE}=${IMAGE}"
       echo "Cloud Deploy release created successfully."
     else
       echo "Skipping Cloud Deploy release creation"
