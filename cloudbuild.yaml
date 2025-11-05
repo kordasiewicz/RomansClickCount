@@ -10,7 +10,7 @@ substitutions:
   _PIPELINE: "clickcount-pipeline"
   _RELEASE: ""  # optional; defaults to release-$BUILD_ID when empty
   _IMAGE: "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
-
+  _RELEASE_NAME: "release-$BUILD_ID"
 steps:
 # 1) Configure Docker auth
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -49,9 +49,6 @@ steps:
   - |
     set -e 
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      
-      _RELEASE_NAME="${RELEASE:-release-$BUILD_ID}"
-      
       echo "Creating Cloud Deploy , bid '$BUILD_ID' release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $_IMAGE, ${_IMAGE} "
       
       # Use the script variables (without '_') here
