@@ -49,7 +49,7 @@ steps:
   - |
     set -e 
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      echo "Creating Cloud Deploy , bid '$BUILD_ID' release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $_IMAGE, ${_IMAGE} "
+      echo "Creating Cloud Deploy , bid '$BUILD_ID' release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $_IMAGE "
       
       # Use the script variables (without '_') here
       gcloud deploy releases create "${_RELEASE_NAME}" \
