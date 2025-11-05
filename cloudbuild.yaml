@@ -57,7 +57,7 @@ steps:
       gcloud deploy releases create "${_RELEASE_NAME}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${IMAGE}"
+        --images="${_SERVICE}=${_IMAGE}"
       echo "Cloud Deploy release created successfully."
     else
       echo "Skipping Cloud Deploy release creation"
