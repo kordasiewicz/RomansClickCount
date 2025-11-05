@@ -41,7 +41,7 @@ steps:
   env:
   - 'PROJECT_ID=${PROJECT_ID}'
   - 'BUILD_ID=${BUILD_ID}'
-  - 'IMAGE=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${SERVICE}:${BUILD_ID}'
+  - "IMAGE=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
   entrypoint: "bash"
   args:
   - "-c"
