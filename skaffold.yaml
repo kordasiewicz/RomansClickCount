@@ -1,0 +1,35 @@
+apiVersion: skaffold/v2beta26
+kind: Config
+metadata:
+  name: romans-click-count
+
+build:
+  artifacts:
+    - image: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}
+  # use Google Cloud Build as the builder (runs in Cloud Build)
+  googleCloudBuild: {}
+
+deploy:
+  # use a simple custom deployer that runs gcloud run deploy
+  custom:
+    name: gcloud-run
+    # run via a shell so we can reference Skaffold's {{.IMAGE}} template
+    command: ["bash", "-lc"]
+    args:
+      - |
+        set -e
+        # Skaffold expands {{.IMAGE}} to the fully-qualified image it built
+        IMAGE="{{.IMAGE}}"
+        echo "Deploying ${_SERVICE} -> ${IMAGE} (region: ${_REGION})"
+        gcloud run deploy "${_SERVICE}" \
+          --image="${IMAGE}" \
+          --region="${_REGION}" \
+          --platform=managed \
+          --quiet
+
+profiles:
+  - name: local
+    build:
+      googleCloudBuild:
+        enabled: false
+    # local profile can be used if you want to build/deploy locally instead of Cloud Build
