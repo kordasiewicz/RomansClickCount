@@ -1,32 +1,25 @@
-apiVersion: skaffold/v2beta26
+apiVersion: skaffold/v4beta7
 kind: Config
 metadata:
   name: romans-click-count
 build:
   artifacts:
     - image: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${BUILD_ID}
-  # use Google Cloud Build as the builder (runs in Cloud Build)
-  googleCloudBuild: {}
+  googleCloudBuild: {} 
+  
+# --- ADDED MANIFESTS SECTION ---
+manifests:
+  rawYaml:
+    - service.yaml # <-- Point to your Cloud Run service definition file
+
 deploy:
-  # use a simple custom deployer that runs gcloud run deploy
-  custom:
-    name: gcloud-run
-    # run via a shell so we can reference Skaffold's {{.IMAGE}} template
-    command: ["bash", "-lc"]
-    args:
-      - |
-        set -e
-        # Skaffold expands {{.IMAGE}} to the fully-qualified image it built
-        IMAGE="{{.IMAGE}}"
-        echo "Deploying ${_SERVICE} -> ${IMAGE} (region: ${_REGION})"
-        gcloud run deploy "${_SERVICE}" \
-          --image="${IMAGE}" \
-          --region="${_REGION}" \
-          --platform=managed \
-          --quiet
+  cloudrun: {} # This tells Skaffold to use the native Cloud Run deployer
+
 profiles:
   - name: local
     build:
-      googleCloudBuild:
-        enabled: false
-    # local profile can be used if you want to build/deploy locally instead of Cloud Build
+      local: {}
+    deploy:
+      # Optional: Add any local deployment config here, 
+      # or remove the deploy block entirely for local runs.
+      pass
