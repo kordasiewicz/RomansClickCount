@@ -62,7 +62,15 @@ steps:
     else
       echo "Skipping Cloud Deploy release creation"
     fi
-
+# 5) set IAM policy after release creation 
+- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+  entrypoint: "bash"
+  args:
+  - "-c"
+  - |
+    echo "Setting Cloud Run IAM policy for ${_SERVICE}..."
+    gcloud run services set-iam-policy ${_SERVICE} iam-policy.yaml \
+        --region="${_REGION}"
 # This 'images' block is substituted by Cloud Build before runtime
 images:
 - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
