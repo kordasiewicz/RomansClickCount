@@ -56,7 +56,7 @@ steps:
       gcloud deploy releases create "${_RELEASE_NAME}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE}"
+        --images="${_SERVICE}=${_IMAGE}" \
         --skaffold-version="2.16.0"
       echo "Cloud Deploy release created successfully."
     else
