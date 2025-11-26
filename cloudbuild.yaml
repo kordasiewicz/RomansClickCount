@@ -47,12 +47,13 @@ steps:
   args:
   - "-c"
   - |
+    LAST5="${BUILD_ID: -5}"
     set -e 
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      echo "Creating Cloud Deploy , bid '$BUILD_ID' release '${_RELEASE_NAME:-5}' release r-'${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $_IMAGE "
+      echo "Creating Cloud Deploy , bid '$BUILD_ID', last5 ${LAST5} release '${_RELEASE_NAME:-5}' release r-'${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $_IMAGE "
       
       # Use the script variables (without '_') here
-      gcloud deploy releases create r-"${_RELEASE_NAME: -5}" \
+      gcloud deploy releases create rel-"${LAST5}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
         --images="${_SERVICE}=${_IMAGE}"
