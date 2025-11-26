@@ -8,6 +8,6 @@ WORKDIR /app
 COPY . .
 RUN deno cache main.ts
 
-EXPOSE 8000
+EXPOSE 8080
 
 CMD ["run", "-A", "main.ts"]
