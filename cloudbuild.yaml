@@ -47,8 +47,18 @@ steps:
   args:
   - "-c"
   - |
-    _LAST5="${BUILD_ID: -5}"
-    set -e 
+    set -e
+    # Determine a short release name
+    if [ -n "${SHORT_SHA}" ]; then
+      # Option 1: Use SHORT_SHA if provided by the trigger
+      _RELEASE_NAME="rel-${SHORT_SHA}"
+    else
+      # Option 2: Fallback to the last 8 characters of BUILD_ID
+      _BUILD_SUFFIX="${BUILD_ID: -8}"
+      _RELEASE_NAME="rel-${_BUILD_SUFFIX}"
+    fi
+
+    echo "Using Cloud Deploy Release Name: ${_RELEASE_NAME}"
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
       echo "Creating Cloud Deploy , bid '$BUILD_ID', last5 ${_LAST5} release '${_RELEASE_NAME:-5}' release r-'${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $_IMAGE "
       
