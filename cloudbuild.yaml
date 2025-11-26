@@ -1,4 +1,4 @@
-# Cloud Build configuration
+# Cloud Build configuration 
 options:
   logging: CLOUD_LOGGING_ONLY
 
