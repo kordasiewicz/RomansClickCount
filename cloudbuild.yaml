@@ -62,7 +62,7 @@ steps:
     else
       echo "Skipping Cloud Deploy release creation"
     fi
-# 5) set IAM policy after release creation
+# 5) set IAM policy after release creation 
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   entrypoint: "bash"
   args:
