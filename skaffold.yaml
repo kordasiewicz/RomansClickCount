@@ -2,13 +2,11 @@ apiVersion: skaffold/v2beta26
 kind: Config
 metadata:
   name: romans-click-count
-
 build:
   artifacts:
-    - image: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}
+    - image: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${BUILD_ID}
   # use Google Cloud Build as the builder (runs in Cloud Build)
   googleCloudBuild: {}
-
 deploy:
   # use a simple custom deployer that runs gcloud run deploy
   custom:
@@ -26,7 +24,6 @@ deploy:
           --region="${_REGION}" \
           --platform=managed \
           --quiet
-
 profiles:
   - name: local
     build:
