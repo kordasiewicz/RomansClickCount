@@ -1,25 +1,27 @@
-apiVersion: skaffold/v4beta7
+apiVersion: skaffold/v4beta7 # Use a modern, supported API version
 kind: Config
 metadata:
   name: romans-click-count
 build:
   artifacts:
     - image: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${BUILD_ID}
+  # Use Google Cloud Build for the default build (used by Cloud Deploy)
   googleCloudBuild: {} 
   
-# --- ADDED MANIFESTS SECTION ---
+# --- Manifests section is required for Cloud Run deployer ---
 manifests:
   rawYaml:
-    - service.yaml # <-- Point to your Cloud Run service definition file
+    # This file should contain your Knative Service YAML definition (e.g., service.yaml)
+    - service.yaml 
 
 deploy:
-  cloudrun: {} # This tells Skaffold to use the native Cloud Run deployer
+  # Use the native Cloud Run deployer for Cloud Deploy targets
+  cloudrun: {} 
 
 profiles:
   - name: local
     build:
-      local: {}
-    deploy:
-      # Optional: Add any local deployment config here, 
-      # or remove the deploy block entirely for local runs.
-      pass
+      # Override the build to use local Docker when running with the 'local' profile
+      local: {} 
+    # The 'deploy' block has been REMOVED entirely from the 'local' profile
+    # If you wanted to deploy locally, you'd configure a valid deployer here (e.g., kubectl: {})
