@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       containers:
-      - image: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${BUILD_ID}
+      - image: romans-click-count
         ports:
         - containerPort: 8080
         env:
