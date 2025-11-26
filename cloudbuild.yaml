@@ -10,7 +10,7 @@ substitutions:
   _PIPELINE: "clickcount-pipeline"
   _RELEASE: ""  # optional; defaults to release-$BUILD_ID when empty
   _IMAGE: "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${BUILD_ID}"
-  _RELEASE_NAME: "rr-${BUILD_ID}"
+  _RELEASE_NAME: "rr-${SHORT_SHA}"
 steps:
 # 1) Configure Docker auth
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -48,22 +48,12 @@ steps:
   - "-c"
   - |
     set -e
-    # Determine a short release name
-    if [ -n "${SHORT_SHA}" ]; then
-      # Option 1: Use SHORT_SHA if provided by the trigger
-      _RELEASE_NAME2="rel-${SHORT_SHA}"
-    else
-      # Option 2: Fallback to the last 8 characters of BUILD_ID
-      _BUILD_SUFFIX2="${BUILD_ID: -8}"
-      _RELEASE_NAME2="rel-${_BUILD_SUFFIX2}"
-    fi
 
-    echo "Using Cloud Deploy Release Name: ${_RELEASE_NAME2}"
     if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      echo "Creating Cloud Deploy , bid '$BUILD_ID', last5 ${_LAST5} release '${_RELEASE_NAME:-5}' release r-'${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $_IMAGE "
+      echo "Creating Cloud Deploy , bid '$BUILD_ID', release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $_IMAGE "
       
       # Use the script variables (without '_') here
-      gcloud deploy releases create rel-"${_LAST5}" \
+      gcloud deploy releases create "${_RELEASE_NAME}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
         --images="${_SERVICE}=${_IMAGE}"
