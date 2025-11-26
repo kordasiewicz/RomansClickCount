@@ -61,16 +61,21 @@ steps:
       echo "Cloud Deploy release created successfully."
     else
       echo "Skipping Cloud Deploy release creation"
-    fi
+    fi 
 # 5) set IAM policy after release creation 
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   entrypoint: "bash"
   args:
   - "-c"
   - |
-    echo "Setting Cloud Run IAM policy for ${_SERVICE}..."
-    gcloud run services set-iam-policy ${_SERVICE} iam-policy.yaml \
-        --region="${_REGION}"
+    # Add the specific user to the Cloud Run Invoker role
+    echo "Adding user:kordasiewicz@google.com to ${_SERVICE} Invoker role..."
+    gcloud run services add-iam-policy-binding "${_SERVICE}" \
+        --member="user:kordasiewicz@google.com" \
+        --role="roles/run.invoker" \
+        --region="${_REGION}" \
+        --quiet # Suppress interactive prompt
+    echo "IAM policy binding successful."
 # This 'images' block is substituted by Cloud Build before runtime
 images:
 - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
