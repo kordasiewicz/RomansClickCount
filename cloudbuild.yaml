@@ -57,6 +57,7 @@ steps:
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
         --images="${_SERVICE}=${_IMAGE}"
+        --skaffold-version="2.16.0"
       echo "Cloud Deploy release created successfully."
     else
       echo "Skipping Cloud Deploy release creation"
