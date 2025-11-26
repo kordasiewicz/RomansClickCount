@@ -1,0 +1,19 @@
+# service.yaml
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: romans-click-count # Must match the service name in your Cloud Build substitutions
+spec:
+  template:
+    spec:
+      containers:
+      - image: ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${BUILD_ID}
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: CLICK_COUNT_INITIAL
+          value: "0"
