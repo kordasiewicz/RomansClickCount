@@ -9,6 +9,8 @@ substitutions:
   # Default to SHA (for staging)
   # You MUST override this in the Production Trigger to be "${TAG_NAME}"
   _IMAGE_TAG: "${SHORT_SHA}" 
+  _IMAGE: "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
+  
 
 steps:
 # 1) Configure Docker auth
@@ -25,14 +27,14 @@ steps:
   args:
   - "build"
   - "-t"
-  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
+  - "${_IMAGE}"
   - "."
 
 # 3) Push
 - name: "gcr.io/cloud-builders/docker"
   args:
   - "push"
-  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
+  - "${_IMAGE}"
 
 # 4) Create Release
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -42,29 +44,26 @@ steps:
   - |
     set -e
     
-    # We use _IMAGE_TAG here to match exactly what was built in Step 2.
-    _IMAGE_PATH="${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
-    
     # We check TAG_NAME to decide the RELEASE NAME and logic
     if [ -n "$TAG_NAME" ]; then
-      echo "Git Tag detected: $TAG_NAME. Creating Production Release for image ${_IMAGE_PATH}"
+      echo "Git Tag detected: $TAG_NAME. Creating Production Release for image ${_IMAGE}"
       
       # Release name based on Tag (e.g., rel-v1.0.0)
       gcloud deploy releases create "rel-${TAG_NAME}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE_PATH}" \ 
+        --images="${_SERVICE}=${_IMAGE}" \ 
         --skaffold-version="2.16.0"
     else
-      echo "No Git Tag detected. Creating Staging Release for image ${_IMAGE_PATH}"
+      echo "No Git Tag detected. Creating Staging Release for image ${_IMAGE}"
       
       # Release name based on SHA (e.g., sha-a1b2c3d)
       gcloud deploy releases create "sha-${SHORT_SHA}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE_PATH}" \
+        --images="${_SERVICE}=${_IMAGE}" \
         --skaffold-version="2.16.0" 
     fi
 
 images:
-- "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
+- "${_IMAGE}"
