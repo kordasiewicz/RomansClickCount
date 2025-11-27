@@ -5,21 +5,27 @@ metadata:
 build:
   artifacts:
     - image: romans-click-count
-  googleCloudBuild: {} 
-  
+  googleCloudBuild: {}
+
+# Default manifest (fallback)
 manifests:
-  rawYaml:
-    - service.yaml 
+  kustomize:
+    paths:
+    - k8s/overlays/staging
 
 deploy:
-  cloudrun: {} 
+  cloudrun: {}
 
 profiles:
-  
-  - name: target-1 
-    # It can be empty as it inherits the main build/deploy blocks
-  
-  
-  - name: local
-    build:
-      local: {}
+  # The profile name must match the Target ID in Cloud Deploy
+  - name: staging
+    manifests:
+      kustomize:
+        paths:
+        - k8s/overlays/staging
+
+  - name: prod
+    manifests:
+      kustomize:
+        paths:
+        - k8s/overlays/prod

@@ -1,0 +1,13 @@
+resources:
+- ../../base
+
+patches:
+- target:
+    kind: Service
+    name: romans-click-count
+  patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: ENVIRONMENT
+        value: "production"

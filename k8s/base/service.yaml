@@ -11,7 +11,5 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: ENVIRONMENT
-          value: "production"
         - name: CLICK_COUNT_INITIAL
           value: "0"

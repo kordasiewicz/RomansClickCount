@@ -1,4 +1,3 @@
-# Cloud Build configuration 
 options:
   logging: CLOUD_LOGGING_ONLY
 
@@ -6,11 +5,10 @@ substitutions:
   _SERVICE: "romans-click-count"
   _REGION: "us-central1"
   _REPOSITORY: "clickcountdemo"
-  _DEPLOY_TO_CLOUD_DEPLOY: "true"
-  _PIPELINE: "clickcount-pipeline"
-  _RELEASE: ""  # optional; defaults to release-$BUILD_ID when empty
+  _PIPELINE: "clickcount-pipeline" # Must match metadata.name in clouddeploy.yaml
   _IMAGE: "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${BUILD_ID}"
-  _RELEASE_NAME: "rr-${SHORT_SHA}"
+  _RELEASE_NAME: "rel-${SHORT_SHA}"
+
 steps:
 # 1) Configure Docker auth
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -18,8 +16,6 @@ steps:
   args:
   - "-c"
   - |
-    set -e
-    echo "Configuring Docker authentication for Artifact Registry in region: ${_REGION}"
     gcloud auth configure-docker "${_REGION}-docker.pkg.dev" --quiet
 
 # 2) Build the Docker image
@@ -36,48 +32,21 @@ steps:
   - "push"
   - "${_IMAGE}"
 
-# 4) Optionally create a Cloud Deploy release
+# 4) Create a Cloud Deploy release
+# This triggers the rollout to the first target (Staging) automatically
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-  # Pass built-in variables ($PROJECT_ID, $BUILD_ID) to the script
-  env:
-  - 'PROJECT_ID=${PROJECT_ID}'
-  - 'BUILD_ID=${BUILD_ID}'
-  
   entrypoint: "bash"
   args:
   - "-c"
   - |
-    set -e
+    echo "Creating Cloud Deploy release ${_RELEASE_NAME}..."
+    gcloud deploy releases create "${_RELEASE_NAME}" \
+      --delivery-pipeline="${_PIPELINE}" \
+      --region="${_REGION}" \
+      --images="${_SERVICE}=${_IMAGE}" \
+      --skaffold-version="2.13.0" # Version compatible with your setup
 
-    if [ "${_DEPLOY_TO_CLOUD_DEPLOY}" = "true" ]; then
-      echo "Creating Cloud Deploy , bid '$BUILD_ID', release '${_RELEASE_NAME}' for delivery pipeline '${_PIPELINE}' using image: $_IMAGE "
-      
-      # Use the script variables (without '_') here
-      gcloud deploy releases create "${_RELEASE_NAME}" \
-        --delivery-pipeline="${_PIPELINE}" \
-        --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE}" \
-        --skaffold-version="2.16.0"
-      echo "Cloud Deploy release created successfully."
-    else
-      echo "Skipping Cloud Deploy release creation"
-    fi 
-# 5) set IAM policy after release creation 
-- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-  entrypoint: "bash"
-  args:
-  - "-c"
-  - |
-    # Add the specific user to the Cloud Run Invoker role
-    echo "Adding user:kordasiewicz@google.com to ${_SERVICE} Invoker role..."
-    gcloud run services add-iam-policy-binding "${_SERVICE}" \
-        --member="user:kordasiewicz@google.com" \
-        --role="roles/run.invoker" \
-        --region="${_REGION}" \
-        --quiet # Suppress interactive prompt
-    echo "IAM policy binding successful."
-# This 'images' block is substituted by Cloud Build before runtime
 images:
-- "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$BUILD_ID"
+- "${_IMAGE}"
 
 timeout: "1200s"
