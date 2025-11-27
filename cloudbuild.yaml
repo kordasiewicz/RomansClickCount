@@ -53,7 +53,7 @@ steps:
       gcloud deploy releases create "rel-${TAG_NAME}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE_PATH}" \
+        --images="${_SERVICE}=${_IMAGE_PATH}" 
         
 
     else
@@ -63,7 +63,7 @@ steps:
       gcloud deploy releases create "sha-${SHORT_SHA}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE_PATH}" \
+        --images="${_SERVICE}=${_IMAGE_PATH}" 
         
     fi
 
