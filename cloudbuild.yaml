@@ -5,9 +5,10 @@ substitutions:
   _SERVICE: "romans-click-count"
   _REGION: "us-central1"
   _REPOSITORY: "clickcountdemo"
-  _PIPELINE: "clickcount-pipeline" # Must match metadata.name in clouddeploy.yaml
-  _IMAGE: "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${BUILD_ID}"
-  _RELEASE_NAME: "rel-${SHORT_SHA}"
+  _PIPELINE: "clickcount-pipeline"
+  # Default to SHA (for staging). 
+  # You MUST override this in the Production Trigger to be "${TAG_NAME}"
+  _IMAGE_TAG: "${SHORT_SHA}" 
 
 steps:
 # 1) Configure Docker auth
@@ -18,35 +19,53 @@ steps:
   - |
     gcloud auth configure-docker "${_REGION}-docker.pkg.dev" --quiet
 
-# 2) Build the Docker image
+# 2) Build
+# Uses _IMAGE_TAG (which is either SHA or TAG_NAME depending on the trigger)
 - name: "gcr.io/cloud-builders/docker"
   args:
   - "build"
   - "-t"
-  - "${_IMAGE}"
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
   - "."
 
-# 3) Push the image
+# 3) Push
 - name: "gcr.io/cloud-builders/docker"
   args:
   - "push"
-  - "${_IMAGE}"
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
 
-# 4) Create a Cloud Deploy release
-# This triggers the rollout to the first target (Staging) automatically
+# 4) Create Release
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   entrypoint: "bash"
   args:
   - "-c"
   - |
-    echo "Creating Cloud Deploy release ${_RELEASE_NAME}..."
-    gcloud deploy releases create "${_RELEASE_NAME}" \
-      --delivery-pipeline="${_PIPELINE}" \
-      --region="${_REGION}" \
-      --images="${_SERVICE}=${_IMAGE}" \
-      --skaffold-version="2.16.0" 
+    set -e
+    
+    # We use _IMAGE_TAG here to match exactly what was built in Step 2.
+    _IMAGE_PATH="${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
+    
+    # We check TAG_NAME to decide the RELEASE NAME and logic
+    if [ -n "$TAG_NAME" ]; then
+      echo "Git Tag detected: $TAG_NAME. Creating Production Release..."
+      
+      # Release name based on Tag (e.g., rel-v1.0.0)
+      gcloud deploy releases create "rel-${TAG_NAME}" \
+        --delivery-pipeline="${_PIPELINE}" \
+        --region="${_REGION}" \
+        --images="${_SERVICE}=${_IMAGE_PATH}" \
+        --skaffold-version="2.16.0"
+
+    else
+      echo "No Git Tag detected. Creating Staging Release..."
+      
+      # Release name based on SHA (e.g., sha-a1b2c3d)
+      gcloud deploy releases create "sha-${SHORT_SHA}" \
+        --delivery-pipeline="${_PIPELINE}" \
+        --region="${_REGION}" \
+        --images="${_SERVICE}=${_IMAGE_PATH}" \
+        --skaffold-version="2.16.0"
+    fi
 
 images:
-- "${_IMAGE}"
-
-timeout: "1200s"
+- "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
