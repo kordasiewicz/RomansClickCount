@@ -1,9 +1,0 @@
-# iam-policy.yaml
-bindings:
-- role: roles/run.invoker
-  members:
-  - user:kordasiewicz@google.com
-  # You can add other accounts or service accounts here:
-  # - serviceAccount:my-other-service-account@project.iam.gserviceaccount.com
-etag: '' # Leave empty
-version: 3
