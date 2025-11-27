@@ -23,7 +23,7 @@ export default function Home(props: PageProps<HomeProps>) {
       </Head>
       <div class="p-4 mx-auto max-w-screen-md">
         <h1 class="my-2">
-          Click count
+          Click count - Deployed with Cloud Run!
         </h1>
         <img
           src="mouse-cursor.svg"
