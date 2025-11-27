@@ -6,7 +6,7 @@ substitutions:
   _REGION: "us-central1"
   _REPOSITORY: "clickcountdemo"
   _PIPELINE: "clickcount-pipeline"
-  # Default to SHA (for staging). 
+  # Default to SHA (for staging)
   # You MUST override this in the Production Trigger to be "${TAG_NAME}"
   _IMAGE_TAG: "${SHORT_SHA}" 
 
