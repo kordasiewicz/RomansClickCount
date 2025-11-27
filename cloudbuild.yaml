@@ -47,24 +47,23 @@ steps:
     
     # We check TAG_NAME to decide the RELEASE NAME and logic
     if [ -n "$TAG_NAME" ]; then
-      echo "Git Tag detected: $TAG_NAME. Creating Production Release..."
+      echo "Git Tag detected: $TAG_NAME. Creating Production Release for image ${_IMAGE_PATH}"
       
       # Release name based on Tag (e.g., rel-v1.0.0)
       gcloud deploy releases create "rel-${TAG_NAME}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE_PATH}" 
-        
-
+        --images="${_SERVICE}=${_IMAGE_PATH}" \ 
+        --skaffold-version="2.16.0"
     else
-      echo "No Git Tag detected. Creating Staging Release..."
+      echo "No Git Tag detected. Creating Staging Release for image ${_IMAGE_PATH}"
       
       # Release name based on SHA (e.g., sha-a1b2c3d)
       gcloud deploy releases create "sha-${SHORT_SHA}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE_PATH}" 
-        
+        --images="${_SERVICE}=${_IMAGE_PATH}" \
+        --skaffold-version="2.16.0" 
     fi
 
 images:
