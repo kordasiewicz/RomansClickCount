@@ -9,7 +9,7 @@ substitutions:
   # Default to SHA (for staging)
   # You MUST override this in the Production Trigger to be "${TAG_NAME}"
   _IMAGE_TAG: "${SHORT_SHA}" 
-  _IMAGE: "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${SHORT_SHA}"
+  _IMAGE: "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
   
 
 steps:
@@ -52,7 +52,7 @@ steps:
       gcloud deploy releases create "rel-${TAG_NAME}" \
         --delivery-pipeline="${_PIPELINE}" \
         --region="${_REGION}" \
-        --images="${_SERVICE}=${_IMAGE}" \ 
+        --images="${_SERVICE}=${_IMAGE}" \
         --skaffold-version="2.16.0"
     else
       echo "No Git Tag detected. Creating Staging Release for image ${_IMAGE}, sha-${SHORT_SHA}, pipeline ${_PIPELINE}, region ${_REGION}, service ${_SERVICE}"
