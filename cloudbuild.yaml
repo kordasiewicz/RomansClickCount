@@ -9,7 +9,7 @@ substitutions:
   # Default to SHA (for staging)
   # You MUST override this in the Production Trigger to be "${TAG_NAME}"
   _IMAGE_TAG: "${SHORT_SHA}" 
-  _IMAGE: "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${_IMAGE_TAG}"
+  _IMAGE: "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE}:${SHORT_SHA}"
   
 
 steps:
