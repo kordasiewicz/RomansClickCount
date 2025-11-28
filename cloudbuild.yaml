@@ -46,7 +46,7 @@ steps:
     
     # We check TAG_NAME to decide the RELEASE NAME and logic
     if [ -n "$TAG_NAME" ]; then
-      echo "Git Tag detected: $TAG_NAME. Creating Production Release for image ${_IMAGE}"
+      echo "Git Tag detected: $TAG_NAME. Creating Production Release for image ${_IMAGE}, rel-${TAG_NAME}, pipeline ${_PIPELINE}, region ${_REGION}, service ${_SERVICE}"
       
       # Release name based on Tag (e.g., rel-v1.0.0)
       gcloud deploy releases create "rel-${TAG_NAME}" \
