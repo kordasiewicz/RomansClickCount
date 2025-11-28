@@ -55,7 +55,7 @@ steps:
         --images="${_SERVICE}=${_IMAGE}" \ 
         --skaffold-version="2.16.0"
     else
-      echo "No Git Tag detected. Creating Staging Release for image ${_IMAGE}"
+      echo "No Git Tag detected. Creating Staging Release for image ${_IMAGE}, sha-${SHORT_SHA}, pipeline ${_PIPELINE}, region ${_REGION}, service ${_SERVICE}"
       
       # Release name based on SHA (e.g., sha-a1b2c3d)
       gcloud deploy releases create "sha-${SHORT_SHA}" \
